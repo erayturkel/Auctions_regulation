@@ -68,5 +68,35 @@ calculate_loss<-function(auction_res){
     )+xlab(" Revenue ") + ylab(" Density ")
 }
 
-auction_res<-sim_auctions(0.985,10000,200,2,100,20,80,30)
+auction_res<-sim_auctions(0.95,10000,200,2,100,20,80,30)
 calculate_loss(auction_res)
+
+
+calculate_pct_loss<-function(auction_res){
+  unrestricted<-auction_res$unrestricted_rev
+  restricted<-auction_res$restricted_rev
+  pol_winners<-auction_res$pol_winners
+  specials<-auction_res$special
+  rev_lost<-((1-(sum(restricted)/sum(unrestricted)))*100)
+  return(rev_lost)
+}
+
+draw_loss_revenue_curve<-function(rangeval,numsim,n_auctions,n_comm, n_pol, m_comm, sd_comm, m_pol,sd_pol){
+  holdout_vals<-seq(0,rangeval,length.out = 100)
+  res_vec<-rep(0,100)
+  i<-1
+  for(val in holdout_vals){
+    meanvec<-rep(0,numsim)
+    for(num in seq(1,numsim)){
+      auction_res<-sim_auctions((1-val),n_auctions,n_comm, n_pol, m_comm, sd_comm, m_pol,sd_pol)
+      meanvec[num]<-calculate_pct_loss(auction_res)
+    }
+    res_vec[i]<-mean(meanvec)
+    i<-i+1
+  }
+  return(res_vec)
+}
+
+
+  
+res_vec<-draw_loss_revenue_curve(0.2,100,100,200,2,100,20,80,30)
